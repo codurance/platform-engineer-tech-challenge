@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket = "codurance-playground-terraform-remote"
-    key    = "platform-engineer-test/networks/terraform.tfstate"
+    key    = "platform-engineer-test/infrastructure/terraform.tfstate"
     region = "eu-west-1"
   }
 }

@@ -1,9 +1,9 @@
-data "terraform_remote_state" "network" {
+data "terraform_remote_state" "infrastructure" {
   backend = "s3"
 
   config = {
-    bucket = "codurance-dpm-terraform-remote"
-    key    = "platform-engineer-test/networks/terraform.tfstate"
+    bucket = "codurance-playground-terraform-remote"
+    key    = "platform-engineer-test/infrastructure/terraform.tfstate"
     region = "eu-west-1"
   }
 }

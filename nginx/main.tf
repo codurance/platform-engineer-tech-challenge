@@ -27,9 +27,9 @@ resource "aws_autoscaling_group" "asg" {
   launch_configuration      = aws_launch_configuration.lg.id
   health_check_grace_period = 300
   health_check_type         = "EC2"
-  vpc_zone_identifier       = ["${data.terraform_remote_state.network.public_subnet_ids}"]
+  vpc_zone_identifier       = data.terraform_remote_state.infrastructure.outputs.public_subnet_ids
 
-  tags = {
+  tag {
     key                 = "Name"
     value               = "nginx"
     propagate_at_launch = true
@@ -39,9 +39,9 @@ resource "aws_launch_configuration" "lg" {
   name_prefix                 = var.name_prefix
   image_id                    = data.aws_ami.latest_amazon_linux_2_ami.id
   instance_type               = var.instance_type
-  key_name                    = var.key_name
+  key_name                    = aws_key_pair.platform-engineer-test.id
   user_data                   = data.template_file.user_data.rendered
-  security_groups             = ["${aws_security_group.security_group.id}"]
+  security_groups             = [aws_security_group.security_group.id]
   associate_public_ip_address = true
 
   lifecycle {
@@ -55,7 +55,7 @@ resource "aws_key_pair" "platform-engineer-test" {
 }
 
 resource "aws_security_group" "security_group" {
-  vpc_id = data.terraform_remote_state.network.vpc_id
+  vpc_id = data.terraform_remote_state.infrastructure.outputs.vpc_id
   name   = "nginx-security-group-${random_string.this.id}"
 }
 
@@ -72,5 +72,5 @@ resource "random_string" "this" {
   length  = 4
   special = false
   upper   = false
-  numbers = true
+  number  = true
 }
