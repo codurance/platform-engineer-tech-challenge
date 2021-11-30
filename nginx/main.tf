@@ -16,40 +16,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-west-2"
-}
-
-locals {
-  image_id  = data.aws_ami.latest_amazon_linux_2_ami.id
-  user_data = data.template_file.user_data.rendered
-}
-
-data "terraform_remote_state" "network" {
-  backend = "s3"
-
-  config = {
-    bucket = "codurance-dpm-terraform-remote"
-    key    = "platform-engineer-test/networks/terraform.tfstate"
-    region = "eu-west-1"
-  }
-}
-
-data "aws_ami" "latest_amazon_linux_2_ami" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm*"]
-  }
-}
-
-data "template_file" "user_data" {
-  template = file("${path.module}/lib/bootstrap.sh.tpl")
+  region = var.region
 }
 
 resource "aws_autoscaling_group" "asg" {
-  name                      = "nginx-asg"
+  name                      = "nginx-asg-${random_string.this.id}"
   min_size                  = 1
   max_size                  = 1
   desired_capacity          = 1
@@ -65,11 +36,11 @@ resource "aws_autoscaling_group" "asg" {
   }
 }
 resource "aws_launch_configuration" "lg" {
-  name_prefix                 = var.name_prefix 
-  image_id                    = local.image_id
+  name_prefix                 = var.name_prefix
+  image_id                    = data.aws_ami.latest_amazon_linux_2_ami.id
   instance_type               = var.instance_type
   key_name                    = var.key_name
-  user_data                   = local.user_data
+  user_data                   = data.template_file.user_data.rendered
   security_groups             = ["${aws_security_group.security_group.id}"]
   associate_public_ip_address = true
 
@@ -79,13 +50,13 @@ resource "aws_launch_configuration" "lg" {
 }
 
 resource "aws_key_pair" "platform-engineer-test" {
-  key_name   = "platform-engineer-test"
+  key_name   = "platform-engineer-test-${random_string.this.id}"
   public_key = file("./keypairs/id_rsa.pub")
 }
 
 resource "aws_security_group" "security_group" {
   vpc_id = data.terraform_remote_state.network.vpc_id
-  name   = "nginx-security-group"
+  name   = "nginx-security-group-${random_string.this.id}"
 }
 
 resource "aws_security_group_rule" "egress_to_anywhere" {
@@ -95,4 +66,11 @@ resource "aws_security_group_rule" "egress_to_anywhere" {
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.security_group.id
+}
+
+resource "random_string" "this" {
+  length  = 4
+  special = false
+  upper   = false
+  numbers = true
 }

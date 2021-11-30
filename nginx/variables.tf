@@ -4,18 +4,18 @@ variable "region" {
 }
 variable "name_prefix" {
   description = "Launch configuration name prefix"
-  type = string
-  default = "nginx_config-"
+  type        = string
+  default     = "nginx_config-"
 }
 
 variable "instance_type" {
   description = "EC2 Instance type"
-  type = string
-  default = "t2.micro"
+  type        = string
+  default     = "t2.micro"
 }
 
 variable "key_name" {
   description = "SSH key name"
-  type = string
-  default = "platform-engineer-test"
+  type        = string
+  default     = "platform-engineer-test"
 }
